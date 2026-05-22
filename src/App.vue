@@ -380,21 +380,15 @@ watch(allQuakes, () => {
 
 onMounted(() => {
   initMap()
-  // 從 localStorage 讀取上次儲存的 Key
-  const saved = localStorage.getItem('cwa_api_key')
-  if (saved) {
-    apiKey.value = saved
+  
+  // 確保 apiKey 已經有值後自動載入資料
+  if (apiKey.value) {
     load()
-  } else {
-    showSettings.value = true   // 沒有 Key 就自動展開設定
   }
 })
 
-// 離開前儲存 Key
-watch(apiKey, (val) => {
-  if (val) localStorage.setItem('cwa_api_key', val)
-  else     localStorage.removeItem('cwa_api_key')
-})
+// 移除對 apiKey 的 watch 儲存邏輯，避免與內置金鑰衝突
+// (已刪除 watch(apiKey, ...))
 
 onUnmounted(() => {
   map?.remove()

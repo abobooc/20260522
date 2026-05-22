@@ -83,8 +83,8 @@ export function useEarthquake() {
   const isLoading   = ref(false)
   const error       = ref(null)
   const lastUpdate  = ref('')
-  // 自動帶入金鑰，優先從環境變數讀取，否則使用預設值
-  const apiKey      = ref(import.meta.env.VITE_CWA_API_KEY || 'CWA-4E2748D1-E7F9-4A1B-94DD-28C54B61319A')
+  // 直接將 API Key 內置於程式碼中
+  const apiKey      = ref('CWA-4E2748D1-E7F9-4A1B-94DD-28C54B61319A')
 
   // 所有地震合併（顯著 + 小區域），依時間排序
   const allQuakes = computed(() => {
