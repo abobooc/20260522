@@ -16,10 +16,6 @@
       </div>
       <div class="header-right">
         <span class="update-time" v-if="lastUpdate">🕐 {{ lastUpdate }}</span>
-        <button class="key-btn" :class="{ 'has-key': apiKey }"
-          @click="showSettings = !showSettings">
-          {{ apiKey ? '🔑 已設定' : '🔑 設定 API Key' }}
-        </button>
         <button class="refresh-btn" @click="load"
           :disabled="isLoading || !apiKey">
           <span :class="{ spin: isLoading }">🔄</span>
@@ -27,30 +23,6 @@
         </button>
       </div>
     </header>
-
-    <!-- ══ API Key 設定面板 ══ -->
-    <Transition name="slide-down">
-      <div class="settings-panel" v-if="showSettings">
-        <div class="settings-inner">
-          <div class="settings-title">🔑 中央氣象署 API Key 設定</div>
-          <div class="settings-hint">
-            尚未申請？前往
-            <a href="https://opendata.cwa.gov.tw" target="_blank">opendata.cwa.gov.tw</a>
-            免費註冊 → 會員中心 → 取得授權碼（格式：CWA-XXXXXXXX-XXXX-...）
-          </div>
-          <div class="settings-row">
-            <input
-              class="key-input"
-              v-model="apiKey"
-              placeholder="CWA-XXXXXXXX-XXXX-XXXX-XXXX-XXXXXXXXXXXX"
-              @keyup.enter="handleSaveKey"
-            />
-            <button class="save-btn" @click="handleSaveKey">💾 套用並載入</button>
-            <button class="clear-btn" v-if="apiKey" @click="apiKey = ''">清除</button>
-          </div>
-        </div>
-      </div>
-    </Transition>
 
     <!-- ══ 主版面 ══ -->
     <div class="main-layout">
@@ -192,11 +164,6 @@
           <div class="empty" v-if="!isLoading && allQuakes.length === 0 && apiKey">
             😴 目前查無地震資料
           </div>
-          <div class="no-key" v-if="!apiKey">
-            <div>🔑</div>
-            <div>請先填入中央氣象署 API Key</div>
-            <button @click="showSettings = true">前往設定</button>
-          </div>
         </div>
       </aside>
 
@@ -225,7 +192,6 @@ const {
 // ── 本地狀態 ──
 const mapEl       = ref(null)
 const selectedNo  = ref(null)
-const showSettings = ref(false)
 const activeFilter = ref('all')
 
 let map     = null
@@ -367,12 +333,6 @@ function selectQuake(q) {
   markers[q.no]?.openPopup()
 }
 
-// ── 儲存 Key 並載入 ──
-function handleSaveKey() {
-  showSettings.value = false
-  if (apiKey.value.trim()) load()
-}
-
 // ── 監聽資料更新 ──
 watch(allQuakes, () => {
   if (map) renderMarkers()
@@ -412,14 +372,6 @@ onUnmounted(() => {
 .header-right { display: flex; align-items: center; gap: 8px; flex-shrink: 0; flex-wrap: wrap; }
 .update-time { font-size: 0.72rem; color: #475569; }
 
-.key-btn {
-  background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.3);
-  border-radius: 8px; padding: 7px 12px; color: #fca5a5; font-size: 0.78rem;
-  font-family: 'Noto Sans TC', sans-serif; transition: all 0.2s;
-}
-.key-btn.has-key { background: rgba(34,197,94,.12); border-color: rgba(34,197,94,.3); color: #86efac; }
-.key-btn:hover { opacity: 0.8; }
-
 .refresh-btn {
   background: rgba(59,130,246,.12); border: 1px solid rgba(59,130,246,.3);
   border-radius: 8px; padding: 7px 12px; color: #93c5fd; font-size: 0.78rem;
@@ -428,35 +380,6 @@ onUnmounted(() => {
 }
 .refresh-btn:hover:not(:disabled) { background: rgba(59,130,246,.22); }
 .refresh-btn:disabled { opacity: 0.4; cursor: not-allowed; }
-
-/* ══ API Key 設定面板 ══ */
-.settings-panel {
-  background: #1e293b; border-bottom: 1px solid #334155;
-  padding: 14px 20px; flex-shrink: 0;
-}
-.settings-inner { max-width: 800px; }
-.settings-title { font-size: 0.88rem; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
-.settings-hint { font-size: 0.75rem; color: #64748b; margin-bottom: 10px; }
-.settings-hint a { color: #3b82f6; text-decoration: none; }
-.settings-row { display: flex; gap: 8px; flex-wrap: wrap; }
-.key-input {
-  flex: 1; min-width: 260px; background: #0f172a; border: 1px solid #334155;
-  border-radius: 8px; padding: 9px 12px; color: #e2e8f0; font-size: 0.85rem;
-  font-family: 'Noto Sans TC', sans-serif;
-}
-.key-input:focus { outline: none; border-color: #3b82f6; }
-.key-input::placeholder { color: #475569; }
-.save-btn {
-  background: #3b82f6; border: none; border-radius: 8px; padding: 9px 16px;
-  color: white; font-size: 0.85rem; font-family: 'Noto Sans TC', sans-serif;
-  transition: background 0.2s;
-}
-.save-btn:hover { background: #2563eb; }
-.clear-btn {
-  background: transparent; border: 1px solid #334155; border-radius: 8px;
-  padding: 9px 12px; color: #64748b; font-size: 0.85rem; font-family: 'Noto Sans TC', sans-serif;
-}
-.clear-btn:hover { border-color: #ef4444; color: #f87171; }
 
 /* ══ 主版面 ══ */
 .main-layout { display: flex; flex: 1; overflow: hidden; }
@@ -556,15 +479,6 @@ onUnmounted(() => {
 
 /* 空狀態 */
 .empty { text-align: center; color: #cbd5e1; padding: 40px 0; font-size: 0.9rem; }
-.no-key {
-  display: flex; flex-direction: column; align-items: center; justify-content: center;
-  gap: 12px; padding: 60px 20px; color: #cbd5e1; text-align: center; font-size: 0.9rem;
-}
-.no-key div:first-child { font-size: 3rem; }
-.no-key button {
-  background: #3b82f6; border: none; border-radius: 8px; padding: 8px 16px;
-  color: white; font-size: 0.85rem; font-family: 'Noto Sans TC', sans-serif;
-}
 
 /* ══ 地圖 ══ */
 .map-area { flex: 1; }
@@ -572,9 +486,6 @@ onUnmounted(() => {
 /* ══ 動畫 ══ */
 @keyframes spin { to { transform: rotate(360deg); } }
 .spin { display: inline-block; animation: spin 0.8s linear infinite; }
-
-.slide-down-enter-active, .slide-down-leave-active { transition: all 0.25s ease; }
-.slide-down-enter-from, .slide-down-leave-to { opacity: 0; transform: translateY(-10px); }
 
 .quake-item-enter-active { transition: all 0.3s ease; }
 .quake-item-enter-from   { opacity: 0; transform: translateX(-10px); }
